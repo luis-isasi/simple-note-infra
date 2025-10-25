@@ -1,0 +1,16 @@
+{
+  "region": "us-east-2",
+  "domain": {
+    "baseDomain": "luis-isasi.com"
+  },
+  "microservice": {
+    "core": {
+      "s3": {
+        "artifacts": ""
+      }
+    },
+    "development": {},
+    "testing": {},
+    "production": {}
+  }
+}
