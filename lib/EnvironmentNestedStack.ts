@@ -23,15 +23,16 @@ export class EnvironmentNestedStack extends NestedStack {
       environment: this.props.environment,
     });
 
-    this.createMicroService();
+    this.createMicroServices();
   }
 
-  private createMicroService() {
-    const microService = new MicroService(this, {
+  private createMicroServices() {
+    const simpleNoteCoreMs = new MicroService(this, {
       microservice: 'SimpleNote',
+      repositoryName: 'simple-note-core-ms',
       environment: this.props.environment,
     });
 
-    return microService;
+    return [simpleNoteCoreMs];
   }
 }
