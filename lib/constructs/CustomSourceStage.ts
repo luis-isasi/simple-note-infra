@@ -25,7 +25,7 @@ export class CustomSourceStage {
     });
 
     // Create and expose the source output artifact to be used by downstream actions
-    this.sourceCode = new codePipeline.Artifact();
+    this.sourceCode = new codePipeline.Artifact(`SourceOutput`);
 
     this.sourceStage.addAction(
       new codePipelineActions.CodeStarConnectionsSourceAction({

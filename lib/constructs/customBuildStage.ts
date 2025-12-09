@@ -20,7 +20,7 @@ export class CustomBuildStage {
     private props: CustomBuildStageProps,
   ) {
     this.buildProject = this.createBuildProject();
-    this.artifact = new codePipeline.Artifact();
+    this.artifact = new codePipeline.Artifact(`BuildOutput`);
     this.createStage();
   }
 
@@ -33,9 +33,23 @@ export class CustomBuildStage {
         buildSpec: codeBuild.BuildSpec.fromObject({
           version: '0.2',
           phases: {
-            build: {
+            install: {
+              'runtime-versions': {
+                nodejs: '22',
+              },
+            },
+            pre_build: {
               commands: ['npm install'],
             },
+            build: {
+              commands: [
+                'npm run build',
+                'zip -r lambda.zip . -x "node_modules/aws-sdk/**"',
+              ],
+            },
+          },
+          artifacts: {
+            files: ['lambda.zip'],
           },
         }),
         environment: {

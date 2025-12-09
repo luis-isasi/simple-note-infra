@@ -11,7 +11,9 @@ interface MicroServiceStackProps {
 }
 
 export class MicroService extends Construct {
-  private lambda: lambda.Function;
+  public lambda: lambda.Function;
+  public environment: Environment;
+  public repositoryName: string;
 
   constructor(
     private scope: Construct,
@@ -21,6 +23,8 @@ export class MicroService extends Construct {
 
     Tags.of(this).add('Environment', this.props.microservice);
     this.lambda = this.createLambda();
+    this.environment = this.props.environment;
+    this.repositoryName = this.props.repositoryName;
 
     if (this.props.isFirstDeployment !== true) {
       this.createCustomPipeline();
@@ -49,6 +53,7 @@ export class MicroService extends Construct {
       microservice: this.props.microservice,
       environment: this.props.environment,
       repositoryName: this.props.repositoryName,
+      lambda: this.lambda,
     });
   }
 }
