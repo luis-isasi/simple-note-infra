@@ -44,7 +44,8 @@ export class CustomBuildStage {
             build: {
               commands: [
                 'npm run build',
-                'zip -r lambda.zip . -x "node_modules/aws-sdk/**"',
+                'cd dist',
+                'zip -r ../lambda.zip . -x "node_modules/aws-sdk/**"',
               ],
             },
           },

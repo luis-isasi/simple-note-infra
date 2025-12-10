@@ -38,7 +38,7 @@ export class MicroService extends Construct {
       {
         functionName: `${this.props.microservice}${this.props.environment}`,
         runtime: lambda.Runtime.NODEJS_22_X,
-        handler: 'index.handler',
+        handler: `handlers/index.handler`,
         code: lambda.Code.fromInline(
           'exports.handler = function(event, context) { console.log(event); }',
         ),

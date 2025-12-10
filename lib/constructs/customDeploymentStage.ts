@@ -36,8 +36,6 @@ export class CustomDeploymentStage {
       this.stage.addAction(this.createManualApproval());
     }
 
-    // this.customAction();
-
     this.deploymentProject = this.createDeploymentProject();
     this.stage.addAction(this.createDeploymentAction());
   }
@@ -82,6 +80,18 @@ export class CustomDeploymentStage {
         projectName: `${this.props.microservice}${this.props.environment}DeploymentProject`,
         buildSpec: codeBuild.BuildSpec.fromObject({
           version: '0.2',
+          phases: {
+            build: {
+              commands: [
+                'echo "Desplegando lambda"',
+                'ls -la', // inspección
+                // Actualizar desde el artifact directamente
+                `aws lambda update-function-code \
+                  --function-name ${this.props.lambda.functionName} \
+                  --zip-file fileb://lambda.zip`,
+              ],
+            },
+          },
         }),
       },
     );
