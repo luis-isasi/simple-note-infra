@@ -14,6 +14,7 @@ export class MicroService extends Construct {
   public lambda: lambda.Function;
   public environment: Environment;
   public repositoryName: string;
+  public microserviceName: string;
 
   constructor(
     private scope: Construct,
@@ -22,9 +23,12 @@ export class MicroService extends Construct {
     super(scope, props.microservice);
 
     Tags.of(this).add('Environment', this.props.microservice);
+
     this.lambda = this.createLambda();
+
     this.environment = this.props.environment;
     this.repositoryName = this.props.repositoryName;
+    this.microserviceName = this.props.microservice;
 
     if (this.props.isFirstDeployment !== true) {
       this.createCustomPipeline();

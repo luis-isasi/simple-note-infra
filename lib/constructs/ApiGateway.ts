@@ -138,19 +138,23 @@ export class ApiGateway extends Construct {
   }
 
   // Método helper para agregar rutas de microservicios
-  public addMicroserviceRoute(
-    path: string,
-    lambda: lambda.IFunction,
-    methods: apigatewayv2.HttpMethod[] = [apigatewayv2.HttpMethod.ANY],
-  ): void {
-    const integration = new HttpLambdaIntegration(`${path}Integration`, lambda);
+  public addMicroserviceRoute({
+    path,
+    lambda,
+    methods = [],
+  }: {
+    path: string;
+    lambda: lambda.Function;
+    methods: string[];
+  }): void {
+    const integration = new HttpLambdaIntegration(`${path}`, lambda);
 
-    methods.forEach((method) => {
-      this.api.addRoutes({
-        path: path,
-        methods: [method],
-        integration: integration,
-      });
+    // methods.forEach((method) => {
+    // });
+    this.api.addRoutes({
+      path: path,
+      methods: methods as apigatewayv2.HttpMethod[],
+      integration: integration,
     });
 
     // Guardar referencia del lambda
