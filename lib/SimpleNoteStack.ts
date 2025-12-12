@@ -24,8 +24,13 @@ export class SimpleNoteStack extends Stack {
       environment: Environment.DEV,
     });
 
+    const productionNestedStack = new EnvironmentNestedStack(this, {
+      environment: Environment.PROD,
+    });
+
     const microservicesForDevOps = this.getMicroservicesForDevOps({
       devNestedStack,
+      productionNestedStack,
     });
 
     new DevOpsNestedStack(this, {

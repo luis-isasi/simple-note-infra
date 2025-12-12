@@ -58,26 +58,27 @@ export class CustomMicroservicePipeline {
       environment: Environment.DEV,
     });
 
-    // if (this.props.test) {
-    //   this.customDeploymentStage = new CustomDeploymentStage(this.scope, {
-    //     microservice: this.props.microservice,
-    //     pipeline: this.pipeline,
-    //     artifact: this.customBuildStage.artifact,
-    //     artifactsBucket: this.pipeline.artifactBucket,
-    //     lambda: this.props.lambda,
-    //     environment: Environment.TEST,
-    //   });
-    // }
+    if (this.props.lambdaTest) {
+      this.customDeploymentStage = new CustomDeploymentStage(this.scope, {
+        microservice: this.props.microservice,
+        pipeline: this.pipeline,
+        artifact: this.customBuildStage.artifact,
+        artifactsBucket: this.pipeline.artifactBucket,
+        lambda: this.props.lambdaTest,
+        environment: Environment.TEST,
+      });
+    }
 
-    // if (this.props.production) {
-    //   this.customDeploymentStage = new CustomDeploymentStage(this.scope, {
-    //     microservice: this.props.microservice,
-    //     pipeline: this.pipeline,
-    //     artifact: this.customBuildStage.artifact,
-    //     artifactsBucket: this.pipeline.artifactBucket,
-    //     lambda: this.props.lambda,
-    //     environment: Environment.PROD,
-    //   });
-    // }
+    if (this.props.lambdaProduction) {
+      this.customDeploymentStage = new CustomDeploymentStage(this.scope, {
+        microservice: this.props.microservice,
+        pipeline: this.pipeline,
+        artifact: this.customBuildStage.artifact,
+        artifactsBucket: this.pipeline.artifactBucket,
+        lambda: this.props.lambdaProduction,
+        environment: Environment.PROD,
+        enableManualApproval: true,
+      });
+    }
   }
 }
