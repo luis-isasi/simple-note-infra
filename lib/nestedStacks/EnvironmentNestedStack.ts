@@ -77,7 +77,7 @@ export class EnvironmentNestedStack extends NestedStack {
 
   private addMicroserviceRoutes() {
     this.api.createFullResource({
-      plural: { name: 'notes', httpMethods: ['GET'] },
+      plural: { name: 'notes', httpMethods: ['GET', 'POST'] },
       singular: { name: '{note}', httpMethods: [] },
       lambda: MicroservicesNames.SIMPLE_NOTE,
     });
