@@ -3,14 +3,7 @@
   "domain": {
     "baseDomain": "luis-isasi.com"
   },
-  "microservice": {
-    "core": {
-      "s3": {
-        "artifacts": ""
-      }
-    },
-    "development": {},
-    "testing": {},
-    "production": {}
-  }
+  "development": {},
+  "testing": {},
+  "production": {}
 }

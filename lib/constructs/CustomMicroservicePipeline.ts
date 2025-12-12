@@ -2,8 +2,6 @@ import { Construct } from 'constructs';
 import { Environment } from '../SimpleNoteStack';
 import {
   aws_codepipeline as codePipeline,
-  aws_codepipeline_actions as codePipelineActions,
-  aws_codebuild as codeBuild,
   aws_lambda as lambda,
 } from 'aws-cdk-lib';
 import { CustomSourceStage } from './CustomSourceStage';
@@ -11,10 +9,11 @@ import { CustomBuildStage } from './customBuildStage';
 import { CustomDeploymentStage } from './customDeploymentStage';
 
 interface CustomMicroservicePipelineProps {
-  environment: Environment;
   microservice: string;
   repositoryName: string;
-  lambda: lambda.IFunction;
+  lambdaDev: lambda.IFunction;
+  lambdaTest?: lambda.IFunction;
+  lambdaProduction?: lambda.IFunction;
 }
 
 export class CustomMicroservicePipeline {
@@ -55,8 +54,30 @@ export class CustomMicroservicePipeline {
       pipeline: this.pipeline,
       artifact: this.customBuildStage.artifact,
       artifactsBucket: this.pipeline.artifactBucket,
-      lambda: this.props.lambda,
-      environment: this.props.environment,
+      lambda: this.props.lambdaDev,
+      environment: Environment.DEV,
     });
+
+    // if (this.props.test) {
+    //   this.customDeploymentStage = new CustomDeploymentStage(this.scope, {
+    //     microservice: this.props.microservice,
+    //     pipeline: this.pipeline,
+    //     artifact: this.customBuildStage.artifact,
+    //     artifactsBucket: this.pipeline.artifactBucket,
+    //     lambda: this.props.lambda,
+    //     environment: Environment.TEST,
+    //   });
+    // }
+
+    // if (this.props.production) {
+    //   this.customDeploymentStage = new CustomDeploymentStage(this.scope, {
+    //     microservice: this.props.microservice,
+    //     pipeline: this.pipeline,
+    //     artifact: this.customBuildStage.artifact,
+    //     artifactsBucket: this.pipeline.artifactBucket,
+    //     lambda: this.props.lambda,
+    //     environment: Environment.PROD,
+    //   });
+    // }
   }
 }
