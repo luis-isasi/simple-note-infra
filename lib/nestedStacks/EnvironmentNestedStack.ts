@@ -1,4 +1,9 @@
-import { NestedStack, NestedStackProps, Tags } from 'aws-cdk-lib';
+import {
+  NestedStack,
+  NestedStackProps,
+  Tags,
+  aws_dynamodb as dynamodb,
+} from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { Environment } from '../SimpleNoteStack';
 import { MicroService } from '../constructs/MicroService';
@@ -6,17 +11,14 @@ import { CustomRestApi } from '../constructs/CustomRestApi';
 import config from '../../config/config.json';
 
 export enum MicroservicesNames {
-  SIMPLE_NOTE = 'simpleNote',
+  NOTES = 'Notes',
 }
 
 export const microservices: {
   name: MicroservicesNames;
   repositoryName: string;
 }[] = [
-  {
-    name: MicroservicesNames.SIMPLE_NOTE,
-    repositoryName: 'simple-note-core-ms',
-  },
+  { name: MicroservicesNames.NOTES, repositoryName: 'simple-note-core-ms' },
 ];
 
 interface EnvironmentNestedStackProps extends NestedStackProps {
@@ -46,13 +48,19 @@ export class EnvironmentNestedStack extends NestedStack {
   }
 
   private createMicroServices() {
-    const simpleNoteCoreMs = new MicroService(this, {
-      name: MicroservicesNames.SIMPLE_NOTE,
+    // MS Notes
+    const noteMs = new MicroService(this, {
+      name: MicroservicesNames.NOTES,
       repositoryName: 'simple-note-core-ms',
       environment: this.props.environment,
     });
 
-    const microservices = [simpleNoteCoreMs];
+    noteMs.addDynamoTable({
+      partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'creationDate', type: dynamodb.AttributeType.NUMBER },
+    });
+
+    const microservices = [noteMs];
 
     this.microservices = microservices.reduce(
       (acc, ms) => {
@@ -70,7 +78,7 @@ export class EnvironmentNestedStack extends NestedStack {
       environment: this.props.environment,
       stageName: 'v1',
       description: 'One API to rule them all',
-      lambdas: this.microservices,
+      lambdas: this.microservices ?? [],
       baseDomainName: config.domain.baseDomain,
     });
   }
@@ -78,8 +86,8 @@ export class EnvironmentNestedStack extends NestedStack {
   private addMicroserviceRoutes() {
     this.api.createFullResource({
       plural: { name: 'notes', httpMethods: ['GET', 'POST'] },
-      singular: { name: '{note}', httpMethods: [] },
-      lambda: MicroservicesNames.SIMPLE_NOTE,
+      singular: { name: '{noteId}', httpMethods: ['GET', 'PUT', 'DELETE'] },
+      lambda: MicroservicesNames.NOTES,
     });
   }
 }

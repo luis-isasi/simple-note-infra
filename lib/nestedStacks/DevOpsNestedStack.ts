@@ -31,7 +31,7 @@ export class DevOpsNestedStack extends NestedStack {
     microservices.forEach(
       ({ name, repositoryName, lambdaDev, lambdaTest, lambdaProduction }) => {
         new CustomMicroservicePipeline(this, {
-          microservice: name,
+          microservice: `Sn${name}Ms`,
           repositoryName,
           lambdaDev,
           lambdaTest,

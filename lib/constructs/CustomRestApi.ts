@@ -129,14 +129,17 @@ export class CustomRestApi {
         assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
       },
     );
-    apiRole.addToPolicy(
-      new iam.PolicyStatement({
-        resources: Object.values(this.props.lambdas).map(
-          (lambda) => lambda.lambda.functionArn,
-        ),
-        actions: ['lambda:InvokeFunction'],
-      }),
+    const lambdaArns = Object.values(this.props.lambdas).map(
+      (lambda) => lambda.lambda.functionArn,
     );
+    if (lambdaArns.length > 0) {
+      apiRole.addToPolicy(
+        new iam.PolicyStatement({
+          resources: lambdaArns,
+          actions: ['lambda:InvokeFunction'],
+        }),
+      );
+    }
     return apiRole;
   }
 
