@@ -61,6 +61,7 @@ export class CustomRestApi {
         `CognitoAuthorizer${this.props.environment}`,
         {
           cognitoUserPools: [this.props.userPool],
+          authorizerName: `SnCognitoAuthorizer${this.props.environment}`,
           identitySource: 'method.request.header.Authorization',
         },
       );
