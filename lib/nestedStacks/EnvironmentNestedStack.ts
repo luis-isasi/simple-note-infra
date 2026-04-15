@@ -2,16 +2,20 @@ import {
   NestedStack,
   NestedStackProps,
   Tags,
+  Stack,
   aws_dynamodb as dynamodb,
+  aws_iam as iam,
 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { Environment } from '../SimpleNoteStack';
 import { MicroService } from '../constructs/MicroService';
 import { CustomRestApi } from '../constructs/CustomRestApi';
+import { AuthNestedStack } from './AuthNestedStack';
 import config from '../../config/config.json';
 
 export enum MicroservicesNames {
   NOTES = 'Notes',
+  CUSTOMERS = 'Customers',
 }
 
 export const microservices: {
@@ -19,6 +23,7 @@ export const microservices: {
   repositoryName: string;
 }[] = [
   { name: MicroservicesNames.NOTES, repositoryName: 'simple-note-core-ms' },
+  { name: MicroservicesNames.CUSTOMERS, repositoryName: 'simple-note-customers-ms' },
 ];
 
 interface EnvironmentNestedStackProps extends NestedStackProps {
@@ -27,6 +32,7 @@ interface EnvironmentNestedStackProps extends NestedStackProps {
 
 export class EnvironmentNestedStack extends NestedStack {
   public readonly api: CustomRestApi;
+  public readonly auth: AuthNestedStack;
 
   public microservices: Record<MicroservicesNames, MicroService> = {} as Record<
     MicroservicesNames,
@@ -41,6 +47,8 @@ export class EnvironmentNestedStack extends NestedStack {
     Tags.of(this).add('Environment', props.environment);
 
     this.createMicroServices();
+
+    this.auth = this.createAuthStack();
 
     this.api = this.createCustomApi();
 
@@ -60,9 +68,27 @@ export class EnvironmentNestedStack extends NestedStack {
       sortKey: { name: 'creationDate', type: dynamodb.AttributeType.NUMBER },
     });
 
-    const microservices = [noteMs];
+    // MS Customers
+    const customersMs = new MicroService(this, {
+      name: MicroservicesNames.CUSTOMERS,
+      repositoryName: 'simple-note-customers-ms',
+      environment: this.props.environment,
+    });
 
-    this.microservices = microservices.reduce(
+    const ssmParamPath = `/simple-note/${this.props.environment.toLowerCase()}/turnstile-secret-key`;
+    customersMs.lambda.addEnvironment('TURNSTILE_SECRET_KEY_PARAM', ssmParamPath);
+    customersMs.lambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['ssm:GetParameter'],
+        resources: [
+          `arn:aws:ssm:${Stack.of(this).region}:${Stack.of(this).account}:parameter/simple-note/*`,
+        ],
+      }),
+    );
+
+    const msList = [noteMs, customersMs];
+
+    this.microservices = msList.reduce(
       (acc, ms) => {
         acc[ms.name as MicroservicesNames] = ms;
         return acc;
@@ -70,7 +96,14 @@ export class EnvironmentNestedStack extends NestedStack {
       {} as Record<MicroservicesNames, MicroService>,
     );
 
-    return microservices;
+    return msList;
+  }
+
+  private createAuthStack() {
+    return new AuthNestedStack(this, {
+      environment: this.props.environment,
+      customersLambda: this.microservices[MicroservicesNames.CUSTOMERS].lambda,
+    });
   }
 
   protected createCustomApi() {
@@ -78,8 +111,9 @@ export class EnvironmentNestedStack extends NestedStack {
       environment: this.props.environment,
       stageName: 'v1',
       description: 'One API to rule them all',
-      lambdas: this.microservices ?? [],
+      lambdas: this.microservices,
       baseDomainName: config.domain.baseDomain,
+      userPool: this.auth.userPool,
     });
   }
 

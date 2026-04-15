@@ -1,6 +1,7 @@
 import {
   aws_apigateway as apiGateway,
   aws_certificatemanager as certificateManager,
+  aws_cognito as cognito,
   aws_iam as iam,
   aws_lambda as lambda,
   aws_route53 as route53,
@@ -17,6 +18,7 @@ export interface CustomRestApiProps {
   description: string;
   baseDomainName?: string;
   lambdas: Record<MicroservicesNames, MicroService>;
+  userPool?: cognito.IUserPool;
 }
 
 export class CustomRestApi {
@@ -29,6 +31,8 @@ export class CustomRestApi {
   public lambdaMap = new Map<string, lambda.IFunction>();
 
   usagePlanMap = new Map<string, apiGateway.UsagePlan>();
+
+  private authorizer?: apiGateway.CognitoUserPoolsAuthorizer;
 
   public defaultCorsPreflightOptionsConfig: apiGateway.CorsOptions = {
     allowOrigins: apiGateway.Cors.ALL_ORIGINS,
@@ -50,6 +54,18 @@ export class CustomRestApi {
     this.zone = this.createDnsZone();
     this.api = this.createRestApi();
     this.role = this.grantApiAccessToLambdas();
+
+    if (this.props.userPool) {
+      this.authorizer = new apiGateway.CognitoUserPoolsAuthorizer(
+        this.scope,
+        `CognitoAuthorizer${this.props.environment}`,
+        {
+          cognitoUserPools: [this.props.userPool],
+          identitySource: 'method.request.header.Authorization',
+        },
+      );
+    }
+
     this.createDnsRecord();
   }
 
@@ -185,6 +201,10 @@ export class CustomRestApi {
           ),
           {
             apiKeyRequired: params.enableKey,
+            authorizationType: this.authorizer
+              ? apiGateway.AuthorizationType.COGNITO
+              : apiGateway.AuthorizationType.NONE,
+            authorizer: this.authorizer,
           },
         );
       });
