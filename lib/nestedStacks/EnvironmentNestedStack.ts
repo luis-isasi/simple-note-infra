@@ -23,7 +23,10 @@ export const microservices: {
   repositoryName: string;
 }[] = [
   { name: MicroservicesNames.NOTES, repositoryName: 'simple-note-core-ms' },
-  { name: MicroservicesNames.CUSTOMERS, repositoryName: 'simple-note-customers-ms' },
+  {
+    name: MicroservicesNames.CUSTOMERS,
+    repositoryName: 'simple-note-customers-ms',
+  },
 ];
 
 interface EnvironmentNestedStackProps extends NestedStackProps {
@@ -76,7 +79,10 @@ export class EnvironmentNestedStack extends NestedStack {
     });
 
     const ssmParamPath = `/simple-note/${this.props.environment.toLowerCase()}/turnstile-secret-key`;
-    customersMs.lambda.addEnvironment('TURNSTILE_SECRET_KEY_PARAM', ssmParamPath);
+    customersMs.lambda.addEnvironment(
+      'TURNSTILE_SECRET_KEY_PARAM',
+      ssmParamPath,
+    );
     customersMs.lambda.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ['ssm:GetParameter'],

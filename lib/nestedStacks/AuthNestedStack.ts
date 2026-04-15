@@ -5,6 +5,7 @@ import {
   RemovalPolicy,
   aws_cognito as cognito,
   aws_lambda as lambda,
+  aws_ssm as ssm,
 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { Environment } from '../SimpleNoteStack';
@@ -44,6 +45,7 @@ export class AuthNestedStack extends NestedStack {
 
     this.userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {
       userPool: this.userPool,
+      userPoolClientName: `SimpleNoteFrontend${props.environment}`,
       authFlows: {
         userPassword: true,
         userSrp: true,
@@ -59,6 +61,15 @@ export class AuthNestedStack extends NestedStack {
     new CfnOutput(this, 'UserPoolClientId', {
       value: this.userPoolClient.userPoolClientId,
       exportName: `SimpleNoteUserPoolClientId${props.environment}`,
+    });
+
+    // Placeholder — update value manually in AWS Console after deploy.
+    // Note: CloudFormation does not support SecureString; change the type
+    // to SecureString in the console once you set the real Cloudflare secret key.
+    new ssm.StringParameter(this, 'TurnstileSecretKeyParam', {
+      parameterName: `/simple-note/${props.environment.toLowerCase()}/turnstile-secret-key`,
+      stringValue: 'PLACEHOLDER',
+      description: `Cloudflare Turnstile Secret Key for ${props.environment}`,
     });
   }
 }
