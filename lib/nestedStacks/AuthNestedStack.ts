@@ -2,6 +2,7 @@ import {
   NestedStack,
   NestedStackProps,
   CfnOutput,
+  Duration,
   RemovalPolicy,
   aws_cognito as cognito,
   aws_lambda as lambda,
@@ -54,6 +55,8 @@ export class AuthNestedStack extends NestedStack {
         userSrp: true,
       },
       generateSecret: false,
+      // Time allowed to complete sign-in challenges (e.g. scanning the TOTP QR); default is 3 min
+      authSessionValidity: Duration.minutes(15),
     });
 
     new CfnOutput(this, 'UserPoolId', {
