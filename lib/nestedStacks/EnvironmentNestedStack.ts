@@ -66,9 +66,15 @@ export class EnvironmentNestedStack extends NestedStack {
       environment: this.props.environment,
     });
 
-    noteMs.addDynamoTable({
+    const notesTable = noteMs.addDynamoTable({
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'creationDate', type: dynamodb.AttributeType.NUMBER },
+    });
+
+    notesTable.table.addGlobalSecondaryIndex({
+      indexName: 'customers-notes-index',
+      partitionKey: { name: 'customerId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'id', type: dynamodb.AttributeType.STRING },
     });
 
     // MS Customers
