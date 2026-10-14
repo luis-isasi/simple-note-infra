@@ -33,6 +33,9 @@ export class AuthNestedStack extends NestedStack {
         requireDigits: true,
         requireSymbols: true,
       },
+      // TOTP (Google Authenticator, Authy, etc.) as mandatory second factor
+      mfa: cognito.Mfa.REQUIRED,
+      mfaSecondFactor: { otp: true, sms: false },
       lambdaTriggers: {
         preSignUp: props.customersLambda,
         preAuthentication: props.customersLambda,
